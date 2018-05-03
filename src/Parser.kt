@@ -5,12 +5,15 @@ import org.xml.sax.helpers.DefaultHandler
 import java.io.*
 import javax.xml.parsers.SAXParserFactory
 
+private val BOM = '\uFEFF'
+
 fun parseXml(params: Parameters) {
     try {
         val file = File(params.source)
-        val reader: BufferedReader = file.bufferedReader()
+        val reader = file.bufferedReader()
         val factory = SAXParserFactory.newInstance()
         val parser = factory.newSAXParser()
+        removeBOM(reader)
         parser.parse(InputSource(reader), CompilerOutputSAXHandler(file.length(), params))
     } catch (e : SAXException) {
         println("SAXException: $e")
@@ -24,12 +27,26 @@ fun parseXml(params: Parameters) {
 
 }
 
+fun removeBOM(reader: BufferedReader) {
+    reader.mark(1)
+    val possibleBOM = CharArray(1)
+    reader.read(possibleBOM)
+    if (possibleBOM[0] != BOM) {
+        reader.reset()
+    }
+}
+
 class CompilerOutputSAXHandler(val fileSize: Long, val params: Parameters) : DefaultHandler(){
 
     var newDocument : StringBuilder = StringBuilder()
     var currentSize : Int = 0
     var currentFile : Int = 1
     var currentProcent : Int = 0
+
+    @Throws(SAXException::class)
+    override fun startDocument() {
+        println("123456")
+    }
 
     @Throws(SAXException::class)
     override fun startElement(uri: String, localName: String, qName: String, attributes: Attributes) {
