@@ -38,15 +38,13 @@ fun removeBOM(reader: BufferedReader) {
 
 class CompilerOutputSAXHandler(val fileSize: Long, val params: Parameters) : DefaultHandler(){
 
-    var newDocument : StringBuilder = StringBuilder()
+    private var newDocument : StringBuilder = StringBuilder()
+    private val MAX_SIZE_BATCH : Int = 1024 * 1024
     var currentSize : Int = 0
+    var currentSizeBatch : Int = 0
     var currentFile : Int = 1
     var currentProcent : Int = 0
-
-    @Throws(SAXException::class)
-    override fun startDocument() {
-        println("123456")
-    }
+    var isCreate : Boolean = true
 
     @Throws(SAXException::class)
     override fun startElement(uri: String, localName: String, qName: String, attributes: Attributes) {
@@ -54,31 +52,39 @@ class CompilerOutputSAXHandler(val fileSize: Long, val params: Parameters) : Def
             newDocument.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
                     .append("<Houses>\n")
             currentSize = newDocument.toString().toByteArray().size
+            currentSizeBatch = currentSize
         }
 
-        var newHoues : StringBuilder = StringBuilder()
+        var newHouses : StringBuilder = StringBuilder()
         if (qName.equals("House")) {
-            newHoues.append("\t<House")
+            newHouses.append("\t<House")
             for (i in 0..(attributes.length-1)) {
-                newHoues = appendAttribute(attributes.getQName(i), attributes.getValue(i), newHoues)
+                newHouses = appendAttribute(attributes.getQName(i), attributes.getValue(i), newHouses)
             }
-            newHoues.append("/>\n")
-            if (newHoues.toString().toByteArray().size + currentSize > params.size.getSizeInByte()) {
+            newHouses.append("/>\n")
+            if (currentSizeBatch >= MAX_SIZE_BATCH) {
+                writeFile(params, newDocument.toString(), true)
+                currentSizeBatch = 0
+                newDocument = StringBuilder()
+            }
+            if (newHouses.toString().toByteArray().size + currentSize > params.size.getSizeInByte()) {
                 newDocument.append("</Houses>")
                 writeFile(params, newDocument.toString())
                 newDocument = StringBuilder()
                 currentSize = 0
+                currentSizeBatch = 0
                 printProcent()
             } else {
-                newDocument.append(newHoues.toString())
-                currentSize = newDocument.toString().toByteArray().size
+                newDocument.append(newHouses.toString())
+                currentSize += newHouses.toString().toByteArray().size
+                currentSizeBatch = newDocument.toString().toByteArray().size
                 printProcent()
             }
         }
     }
 
     private fun printProcent() {
-        val newProcent = 100 * ((currentFile-1)*params.size.getSizeInByte() + currentSize ) / fileSize
+        val newProcent = 100L * ((currentFile-1)*params.size.getSizeInByte() + currentSize ) / fileSize
         if (newProcent.toInt() != currentProcent) {
             currentProcent = newProcent.toInt()
             println ("Complte: $currentProcent%")
@@ -92,12 +98,22 @@ class CompilerOutputSAXHandler(val fileSize: Long, val params: Parameters) : Def
         writeFile(params, newDocument.toString())
     }
 
-    private fun writeFile(params: Parameters, homes: String) {
+    private fun writeFile(params: Parameters, homes: String, isBatch : Boolean = false) {
         try {
-            val writer = PrintWriter(params.template.replace("<index>", currentFile.toString()))
-            writer.append(newDocument.toString())
+            val writer = if (isCreate) {
+                isCreate = false
+                PrintWriter(params.template.replace("<index>", currentFile.toString()))
+            } else {
+                PrintWriter(OutputStreamWriter(FileOutputStream(
+                        params.template.replace("<index>", currentFile.toString())
+                        , true)))
+            }
+            writer.append(homes)
             writer.close()
-            currentFile++
+            if (!isBatch) {
+                currentFile++
+                isCreate = true
+            }
         } catch (e: FileNotFoundException) {
             println("FileNotFoundException: $e" )
         } catch (e: SecurityException) {
