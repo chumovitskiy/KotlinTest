@@ -89,8 +89,9 @@ class CompilerOutputSAXHandler(val fileSize: Long, val params: Parameters) : Def
         // ________________________________________________________        *  100 %
         // fileSize
         val newPercent =
-        ( BigInteger.valueOf(currentFile-1L) *  BigInteger.valueOf(params.size.getSizeInByte().toLong()) +
-                BigInteger.valueOf(currentSize.toLong()) ) / BigInteger.valueOf(fileSize) * BigInteger.valueOf(100L)
+         BigInteger.valueOf(100L) * ( BigInteger.valueOf(currentFile-1L) *
+                 BigInteger.valueOf(params.size.getSizeInByte().toLong()) +
+                BigInteger.valueOf(currentSize.toLong()) ) / BigInteger.valueOf(fileSize)
         if (newPercent.toInt() != currentPercent) {
             currentPercent = newPercent.toInt()
             println ("Complte: $currentPercent%")
