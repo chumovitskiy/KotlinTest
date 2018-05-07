@@ -13,6 +13,8 @@ fun main (args: Array<String>) {
                 "--source", "-sf" -> flagName="sf"
                 "--template", "-t" -> flagName="t"
                 "--size", "-s" -> flagName="s"
+                "--parenttag", "-pt" -> flagName="pt"
+                "--childrentag", "-ct" -> flagName="ct"
                 else -> isError=true
             }
         } else {
@@ -34,6 +36,8 @@ fun main (args: Array<String>) {
                                 else -> params.size = Size(arg.substring(0, arg.length - 1).toInt(), SizeType.b)
                             }
                         }
+                        "pt" -> params.parentTag = arg
+                        "ct" -> params.childTag = arg
                         else -> isError = true
                     }
                 } catch (e:  NumberFormatException) {
@@ -58,6 +62,8 @@ fun printHelp() {
             "--template <template> or -t <template> are path + template name output file. Default outputHOUSE<index>.xml.\n" +
             "--size <size> or -s <size> are max size output files. Default 10M. Example: 10M - 10 Megabyte, 500K - 500 Kilobyte. 256 - 256 byte." +
             " Max size is 2147483647 byte (less 2G)\n" +
+            "--parenttag <name tag> or -pt <name tag> (without angular bkt) Name parent tag. Default Houses.\n" +
+            "--childrentag <name tag> or -ct <name tag> (without angular bkt) Name child tag. Default House.\n" +
             "Example:\n" +
             "1. start.bat -h\n" +
             "2. start.bat --size 100M\n" +

@@ -1,5 +1,6 @@
 data class Parameters(var help: Boolean = false, var source: String = "HOUSE.xml",
-                      var template: String = "outputHOUSE<index>.xml", var size: Size = Size())
+                      var template: String = "outputHOUSE<index>.xml", var size: Size = Size(),
+                      var parentTag : String = "Houses", var childTag : String = "House")
 
 data class Size (val count: Int = 10, val type: SizeType = SizeType.M) {
     fun getSizeInByte() : Int {

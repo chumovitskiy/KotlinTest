@@ -51,14 +51,14 @@ class CompilerOutputSAXHandler(val fileSize: Long, val params: Parameters) : Def
     override fun startElement(uri: String, localName: String, qName: String, attributes: Attributes) {
         if (newDocument.toString().isBlank()) {
             newDocument.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
-                    .append("<Houses>\n")
+                    .append("<" + params.parentTag + ">\n")
             currentSize = newDocument.toString().toByteArray().size
             currentSizeBatch = currentSize
         }
 
         var newHouses : StringBuilder = StringBuilder()
-        if (qName.equals("House")) {
-            newHouses.append("\t<House")
+        if (qName.equals(params.childTag)) {
+            newHouses.append("\t<" + params.childTag)
             for (i in 0..(attributes.length-1)) {
                 newHouses = appendAttribute(attributes.getQName(i), attributes.getValue(i), newHouses)
             }
@@ -69,7 +69,7 @@ class CompilerOutputSAXHandler(val fileSize: Long, val params: Parameters) : Def
                 newDocument = StringBuilder()
             }
             if (newHouses.toString().toByteArray().size + currentSize > params.size.getSizeInByte()) {
-                newDocument.append("</Houses>")
+                newDocument.append("</" + params.parentTag + ">")
                 writeFile(params, newDocument.toString())
                 newDocument = StringBuilder()
                 currentSize = 0
@@ -100,7 +100,7 @@ class CompilerOutputSAXHandler(val fileSize: Long, val params: Parameters) : Def
 
     @Throws(SAXException::class)
     override fun endDocument() {
-        newDocument.append("</Houses>")
+        newDocument.append("</" + params.parentTag + ">")
         writeFile(params, newDocument.toString())
     }
 
