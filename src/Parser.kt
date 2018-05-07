@@ -3,6 +3,7 @@ import org.xml.sax.InputSource
 import org.xml.sax.SAXException
 import org.xml.sax.helpers.DefaultHandler
 import java.io.*
+import java.math.BigInteger
 import javax.xml.parsers.SAXParserFactory
 
 private val BOM = '\uFEFF'
@@ -43,7 +44,7 @@ class CompilerOutputSAXHandler(val fileSize: Long, val params: Parameters) : Def
     var currentSize : Int = 0
     var currentSizeBatch : Int = 0
     var currentFile : Int = 1
-    var currentProcent : Int = 0
+    var currentPercent : Int = 0
     var isCreate : Boolean = true
 
     @Throws(SAXException::class)
@@ -73,21 +74,26 @@ class CompilerOutputSAXHandler(val fileSize: Long, val params: Parameters) : Def
                 newDocument = StringBuilder()
                 currentSize = 0
                 currentSizeBatch = 0
-                printProcent()
+                printPуrcent()
             } else {
                 newDocument.append(newHouses.toString())
                 currentSize += newHouses.toString().toByteArray().size
                 currentSizeBatch = newDocument.toString().toByteArray().size
-                printProcent()
+                printPуrcent()
             }
         }
     }
 
-    private fun printProcent() {
-        val newProcent = 100L * ((currentFile-1)*params.size.getSizeInByte() + currentSize ) / fileSize
-        if (newProcent.toInt() != currentProcent) {
-            currentProcent = newProcent.toInt()
-            println ("Complte: $currentProcent%")
+    private fun printPуrcent() {
+        // (currentFile-1)*params.size.getSizeInByte() + currentSize
+        // ________________________________________________________        *  100 %
+        // fileSize
+        val newPercent =
+        ( BigInteger.valueOf(currentFile-1L) *  BigInteger.valueOf(params.size.getSizeInByte().toLong()) +
+                BigInteger.valueOf(currentSize.toLong()) ) / BigInteger.valueOf(fileSize) * BigInteger.valueOf(100L)
+        if (newPercent.toInt() != currentPercent) {
+            currentPercent = newPercent.toInt()
+            println ("Complte: $currentPercent%")
         }
 
     }
