@@ -3,7 +3,7 @@ data class Parameters(var help: Boolean = false, var source: String = "HOUSE.xml
 
 data class Size (val count: Int = 10, val type: SizeType = SizeType.M) {
     fun getSizeInByte() : Int {
-        var result : Int = 0;
+        var result = 0
         when (type) {
             SizeType.b -> result = count
             SizeType.K -> result = count * 1024
